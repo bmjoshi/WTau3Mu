@@ -38,17 +38,22 @@ from CMGTools.WTau3Mu.analyzers.MuonWeighterAnalyzer                import MuonW
 from CMGTools.WTau3Mu.analyzers.RecoilCorrector                     import RecoilCorrector
 
 # import samples, signal
-from CMGTools.WTau3Mu.samples.mc_2016 import WToTauTo3Mu, all_wtau3mu
+from CMGTools.WTau3Mu.samples.mc_2016 import all_wjets, WJetsToLNu_amc, WJetsToLNu_amc_ext, WJetsToLNu_mg, WJetsToLNu_mg_ext
+from CMGTools.WTau3Mu.samples.mc_2016 import all_dyjets, DYJetsToLL_M50_ext1, DYJetsToLL_M50_ext2
+from CMGTools.WTau3Mu.samples.ds_mc   import DsPhiMuMuPi
 
 puFileMC   = '$CMSSW_BASE/src/CMGTools/H2TauTau/data/MC_Moriond17_PU25ns_V1.root'
-puFileData = '/afs/cern.ch/user/a/anehrkor/public/Data_Pileup_2016_271036-284044_80bins.root'
+puFileData = '$CMSSW_BASE/src/CMGTools/H2TauTau/data/MC_Moriond17_PU25ns_V1.root'
+
+# Alex's account is gone...
+# puFileData = '/afs/cern.ch/user/a/anehrkor/public/Data_Pileup_2016_271036-284044_80bins.root'
 
 ###################################################
 ###                   OPTIONS                   ###
 ###################################################
 # Get all heppy options; set via "-o production" or "-o production=True"
 # production = True run on batch, production = False (or unset) run locally
-production         = getHeppyOption('production'        , False)
+production         = getHeppyOption('production'        , True )
 pick_events        = getHeppyOption('pick_events'       , False)
 kin_vtx_fitter     = getHeppyOption('kin_vtx_fitter'    , True )
 extrap_muons_to_L1 = getHeppyOption('extrap_muons_to_L1', False)
@@ -56,7 +61,7 @@ compute_mvamet     = getHeppyOption('compute_mvamet'    , False)
 ###################################################
 ###               HANDLE SAMPLES                ###
 ###################################################
-samples = all_wtau3mu
+samples = all_wjets + all_dyjets + [DsPhiMuMuPi]
 
 for sample in samples:
     sample.triggers  = ['HLT_DoubleMu3_Trk_Tau3mu_v%d'                      %i for i in range(4, 5)]
@@ -68,7 +73,7 @@ for sample in samples:
 #     sample.triggers += ['HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v%d' %i for i in range(7, 8)]
 #     sample.triggers += ['HLT_TripleMu_12_10_5_v%d'                          %i for i in range(4, 5)]
 
-    sample.splitFactor = splitFactor(sample, 2e3)
+    sample.splitFactor = splitFactor(sample, 2e5)
     sample.puFileData = puFileData
     sample.puFileMC   = puFileMC
 
@@ -80,54 +85,7 @@ selectedComponents = samples
 eventSelector = cfg.Analyzer(
     EventSelector,
     name='EventSelector',
-    toSelect=[
-        12114,
-        12589,
-        12664,
-        12689,
-        13680,
-        14385,
-        14632,
-        15248,
-        15588,
-         1621,
-        16276,
-        17307,
-        17453,
-        17488,
-        17507,
-        17838,
-        18126,
-        18817,
-        19001,
-        19194,
-        19262,
-        19398,
-        19610,
-        19704,
-         2380,
-         2417,
-         2882,
-         3201,
-         3898,
-         4194,
-         4338,
-         5384,
-         5454,
-         5493,
-         5604,
-         5996,
-          645,
-         6451,
-         6829,
-         7197,
-         7530,
-         7571,
-         8705,
-          999,
-         9527,
-         9989,
-    ]
+    toSelect=[]
 )
 
 lheWeightAna = cfg.Analyzer(
@@ -168,7 +126,7 @@ pileUpAna = cfg.Analyzer(
 )
 
 genAna = GeneratorAnalyzer.defaultConfig
-genAna.allGenTaus = True # save in event.gentaus *ALL* taus, regardless whether hadronic / leptonic decay
+# genAna.allGenTaus = True # save in event.gentaus *ALL* taus, regardless whether hadronic / leptonic decay
 
 # for each path specify which filters you want the muons to match to
 triggers_and_filters = OrderedDict()
@@ -184,16 +142,16 @@ triggers_and_filters['HLT_DoubleMu3_Trk_Tau3mu'                     ] = (['hltTa
 tau3MuAna = cfg.Analyzer(
     Tau3MuAnalyzer,
     name='Tau3MuAnalyzer',
-#     trigger_match=True,
     trigger_match=triggers_and_filters,
-    useMVAmet=True,
-    dz_cut=1, # 1 cm
+    useMVAmet=False,
+    dz_cut=1,
 )
 
 treeProducer = cfg.Analyzer(
     WTau3MuTreeProducer,
     name='WTau3MuTreeProducer',
     fillL1=False,
+    tauh=True,
 )
 
 if kin_vtx_fitter:
@@ -308,11 +266,11 @@ sequence = cfg.Sequence([
 ###            SET BATCH OR LOCAL               ###
 ###################################################
 if not production:
-    comp                 = WToTauTo3Mu
+    comp                 = WJetsToLNu_amc
     selectedComponents   = [comp]
     comp.splitFactor     = 1
     comp.fineSplitFactor = 1
-#     comp.files           = comp.files[:1]
+    comp.files           = comp.files[:10]
 #     comp.files = [
 #        '/afs/cern.ch/work/m/manzoni/public/perLuca/newsignal/output.root'
        #'file:/afs/cern.ch/work/m/manzoni/diTau2015/CMSSW_9_2_2_minimal_recipe/src/RecoMET/METPUSubtraction/test/output.root',

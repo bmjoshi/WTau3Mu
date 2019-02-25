@@ -4,7 +4,7 @@ import os
 #####COMPONENT CREATOR
 
 from CMGTools.RootTools.samples.ComponentCreator import ComponentCreator
-kreator = ComponentCreator()
+creator = ComponentCreator()
 
 # first private production
 WToTauTo3Mu = cfg.MCComponent(
@@ -51,3 +51,29 @@ all_wtau3mu = [
     WToTauTo3Mu_M1p90,
     WToTauTo3Mu_M1p95,
 ]
+
+
+WJetsToLNu_amc     = creator.makeMCComponent(name = 'WJetsToLNu_amc'    , dataset = '/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'     , user = 'CMS', pattern = '.*root', xSec = (8580+11370)*0.1063*3 , useAAA  = True)
+WJetsToLNu_amc_ext = creator.makeMCComponent(name = 'WJetsToLNu_amc_ext', dataset = '/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v2/MINIAODSIM', user = 'CMS', pattern = '.*root', xSec = (8580+11370)*0.1063*3 , useAAA  = True)
+WJetsToLNu_mg      = creator.makeMCComponent(name = 'WJetsToLNu_mg'     , dataset = '/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'      , user = 'CMS', pattern = '.*root', xSec = (8580+11370)*0.1063*3 , useAAA  = True)
+WJetsToLNu_mg_ext  = creator.makeMCComponent(name = 'WJetsToLNu_mg_ext' , dataset = '/WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/MINIAODSIM' , user = 'CMS', pattern = '.*root', xSec = (8580+11370)*0.1063*3 , useAAA  = True)
+
+all_wjets = [
+    WJetsToLNu_amc    ,
+    WJetsToLNu_amc_ext,
+    WJetsToLNu_mg     ,
+    WJetsToLNu_mg_ext ,
+]
+
+
+DYJetsToLL_M50_ext1 = creator.makeMCComponent(name = 'DYJetsToLL_M50_ext1' , dataset = '/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/MINIAODSIM' , user = 'CMS', pattern = '.*root', xSec = (8580+11370)*0.1063*3 , useAAA  = True)
+DYJetsToLL_M50_ext2 = creator.makeMCComponent(name = 'DYJetsToLL_M50_ext2' , dataset = '/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/MINIAODSIM' , user = 'CMS', pattern = '.*root', xSec = (8580+11370)*0.1063*3 , useAAA  = True)
+
+all_dyjets = [
+    DYJetsToLL_M50_ext1,
+    DYJetsToLL_M50_ext2,
+]
+
+
+
+

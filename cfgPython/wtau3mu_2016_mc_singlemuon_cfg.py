@@ -41,7 +41,7 @@ from CMGTools.WTau3Mu.analyzers.RecoilCorrector                     import Recoi
 from CMGTools.WTau3Mu.samples.mc_2016 import WToTauTo3Mu, all_wtau3mu
 
 puFileMC   = '$CMSSW_BASE/src/CMGTools/H2TauTau/data/MC_Moriond17_PU25ns_V1.root'
-puFileData = '/afs/cern.ch/user/a/anehrkor/public/Data_Pileup_2016_271036-284044_80bins.root'
+puFileData = '$CMSSW_BASE/src/CMGTools/WTau3Mu/data/pileup/Data_Pileup_2016_271036-284044_13TeVMoriond17_23Sep2016ReReco_69p2mbMinBiasXS.root'
 
 ###################################################
 ###                   OPTIONS                   ###
@@ -56,17 +56,20 @@ compute_mvamet     = getHeppyOption('compute_mvamet'    , False)
 ###################################################
 ###               HANDLE SAMPLES                ###
 ###################################################
-samples = all_wtau3mu
+samples = [WToTauTo3Mu] + all_wtau3mu
 
 for sample in samples:
-    sample.triggers  = ['HLT_DoubleMu3_Trk_Tau3mu_v%d'                      %i for i in range(4, 5)]
-#     sample.triggers += ['HLT_IsoMu24_v%d'                                   %i for i in range(4, 5)]
-#     sample.triggers += ['HLT_IsoTkMu24_v%d'                                 %i for i in range(4, 5)]
+#     sample.triggers  = ['HLT_DoubleMu3_Trk_Tau3mu_v%d'                      %i for i in range(4, 5)]
+    sample.triggers  = ['HLT_IsoMu24_v%d'                                   %i for i in range(4, 5)]
+    sample.triggers += ['HLT_IsoTkMu24_v%d'                                 %i for i in range(4, 5)]
 #     sample.triggers += ['HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v%d'           %i for i in range(7, 8)]
 #     sample.triggers += ['HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v%d'         %i for i in range(6, 7)]
 #     sample.triggers += ['HLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v%d'       %i for i in range(3, 4)]
 #     sample.triggers += ['HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v%d' %i for i in range(7, 8)]
 #     sample.triggers += ['HLT_TripleMu_12_10_5_v%d'                          %i for i in range(4, 5)]
+
+#     # triggers you don't, suppose you run on two different datasets
+    sample.vetoTriggers = ['HLT_DoubleMu3_Trk_Tau3mu_v%d'                   %i for i in range(4, 5)]
 
     sample.splitFactor = splitFactor(sample, 2e3)
     sample.puFileData = puFileData
@@ -80,54 +83,7 @@ selectedComponents = samples
 eventSelector = cfg.Analyzer(
     EventSelector,
     name='EventSelector',
-    toSelect=[
-        12114,
-        12589,
-        12664,
-        12689,
-        13680,
-        14385,
-        14632,
-        15248,
-        15588,
-         1621,
-        16276,
-        17307,
-        17453,
-        17488,
-        17507,
-        17838,
-        18126,
-        18817,
-        19001,
-        19194,
-        19262,
-        19398,
-        19610,
-        19704,
-         2380,
-         2417,
-         2882,
-         3201,
-         3898,
-         4194,
-         4338,
-         5384,
-         5454,
-         5493,
-         5604,
-         5996,
-          645,
-         6451,
-         6829,
-         7197,
-         7530,
-         7571,
-         8705,
-          999,
-         9527,
-         9989,
-    ]
+    toSelect=[13]
 )
 
 lheWeightAna = cfg.Analyzer(
@@ -172,9 +128,9 @@ genAna.allGenTaus = True # save in event.gentaus *ALL* taus, regardless whether 
 
 # for each path specify which filters you want the muons to match to
 triggers_and_filters = OrderedDict()
-triggers_and_filters['HLT_DoubleMu3_Trk_Tau3mu'                     ] = (['hltTau3muTkVertexFilter'                              , 'hltTau3muTkVertexFilter'                             , 'hltTau3muTkVertexFilter'                             ], Counter({83:2, 91:1}))
-# triggers_and_filters['HLT_IsoMu24'                                  ] = (['hltL3crIsoL1sMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p09'                                                                                                                ], Counter({83:1      }))
-# triggers_and_filters['HLT_IsoTkMu24'                                ] = (['hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09'                                                                                                                          ], Counter({83:1      }))
+# triggers_and_filters['HLT_DoubleMu3_Trk_Tau3mu'                     ] = (['hltTau3muTkVertexFilter'                              , 'hltTau3muTkVertexFilter'                             , 'hltTau3muTkVertexFilter'                             ], Counter({83:2, 91:1}))
+triggers_and_filters['HLT_IsoMu24'                                  ] = (['hltL3crIsoL1sMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p09'                                                                                                                ], Counter({83:1      }))
+triggers_and_filters['HLT_IsoTkMu24'                                ] = (['hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09'                                                                                                                          ], Counter({83:1      }))
 # triggers_and_filters['HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ'          ] = (['hltDiMuonGlb17Glb8RelTrkIsoFiltered0p4DzFiltered0p2'  , 'hltDiMuonGlb17Glb8RelTrkIsoFiltered0p4DzFiltered0p2'                                                         ], Counter({83:2      }))
 # triggers_and_filters['HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ'        ] = (['hltDiMuonGlb17Trk8RelTrkIsoFiltered0p4DzFiltered0p2'  , 'hltDiMuonGlb17Trk8RelTrkIsoFiltered0p4DzFiltered0p2'                                                         ], Counter({83:2      }))
 # triggers_and_filters['HLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ'      ] = (['hltDiMuonTrk17Trk8RelTrkIsoFiltered0p4DzFiltered0p2'  , 'hltDiMuonTrk17Trk8RelTrkIsoFiltered0p4DzFiltered0p2'                                                         ], Counter({83:2      }))
@@ -297,7 +253,7 @@ sequence = cfg.Sequence([
     genMatchAna,
 #     recoilAna,
     vertexFitter,
-    muonWeighterAna,
+#     muonWeighterAna,
     isoAna,
 #     level1Ana,
     bdtAna,

@@ -1,6 +1,5 @@
-# import dill # needed in order to serialise lambda functions, need to be installed by the user. See http://stackoverflow.com/questions/25348532/can-python-pickle-lambda-functions
+# heppy_batch.py -o /eos/cms/store/group/phys_tau/WTau3Mu/mvamet2016/prod_v5 wtau3mu_2016_data_doublemu_cfg.py -b 'bsub -u hjkagsdjhga -q 8nh < ./batchScript.sh'
 from collections import OrderedDict, Counter
-import os
 
 import PhysicsTools.HeppyCore.framework.config as cfg
 from PhysicsTools.HeppyCore.framework.config     import printComps
@@ -34,11 +33,10 @@ from CMGTools.WTau3Mu.analyzers.GenMatcherAnalyzer                  import GenMa
 from CMGTools.WTau3Mu.analyzers.L1TriggerAnalyzer                   import L1TriggerAnalyzer
 from CMGTools.WTau3Mu.analyzers.BDTAnalyzer                         import BDTAnalyzer
 from CMGTools.WTau3Mu.analyzers.MVAMuonIDAnalyzer                   import MVAMuonIDAnalyzer
-from CMGTools.WTau3Mu.analyzers.MuonWeighterAnalyzer                import MuonWeighterAnalyzer
 from CMGTools.WTau3Mu.analyzers.RecoilCorrector                     import RecoilCorrector
 
-# import samples, signal
-from CMGTools.WTau3Mu.samples.mc_2016 import WToTauTo3Mu, all_wtau3mu
+# import samples
+from CMGTools.WTau3Mu.samples.data_2016                             import datasamplesSingleMuon03Feb2017 as samples
 
 puFileMC   = '$CMSSW_BASE/src/CMGTools/H2TauTau/data/MC_Moriond17_PU25ns_V1.root'
 puFileData = '/afs/cern.ch/user/a/anehrkor/public/Data_Pileup_2016_271036-284044_80bins.root'
@@ -48,29 +46,39 @@ puFileData = '/afs/cern.ch/user/a/anehrkor/public/Data_Pileup_2016_271036-284044
 ###################################################
 # Get all heppy options; set via "-o production" or "-o production=True"
 # production = True run on batch, production = False (or unset) run locally
-production         = getHeppyOption('production'        , False)
+production         = getHeppyOption('production'        , True )
 pick_events        = getHeppyOption('pick_events'       , False)
 kin_vtx_fitter     = getHeppyOption('kin_vtx_fitter'    , True )
 extrap_muons_to_L1 = getHeppyOption('extrap_muons_to_L1', False)
-compute_mvamet     = getHeppyOption('compute_mvamet'    , False)
+compute_mvamet     = getHeppyOption('compute_mvamet'    , True )
 ###################################################
 ###               HANDLE SAMPLES                ###
 ###################################################
-samples = all_wtau3mu
-
 for sample in samples:
-    sample.triggers  = ['HLT_DoubleMu3_Trk_Tau3mu_v%d'                      %i for i in range(4, 5)]
-#     sample.triggers += ['HLT_IsoMu24_v%d'                                   %i for i in range(4, 5)]
-#     sample.triggers += ['HLT_IsoTkMu24_v%d'                                 %i for i in range(4, 5)]
-#     sample.triggers += ['HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v%d'           %i for i in range(7, 8)]
-#     sample.triggers += ['HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v%d'         %i for i in range(6, 7)]
-#     sample.triggers += ['HLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v%d'       %i for i in range(3, 4)]
-#     sample.triggers += ['HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v%d' %i for i in range(7, 8)]
-#     sample.triggers += ['HLT_TripleMu_12_10_5_v%d'                          %i for i in range(4, 5)]
+    # triggers you want in DoubleMuonLowMass
+#     sample.triggers     = ['HLT_DoubleMu3_Trk_Tau3mu_v%d'                      %i for i in range(1, 12)]
 
-    sample.splitFactor = splitFactor(sample, 2e3)
-    sample.puFileData = puFileData
-    sample.puFileMC   = puFileMC
+#     # triggers you want in SingleMuon
+    sample.triggers     = ['HLT_IsoMu24_v%d'                                   %i for i in range(1, 12)]
+    sample.triggers    += ['HLT_IsoTkMu24_v%d'                                 %i for i in range(1, 12)]
+# 
+#     # triggers you want in DoubleMuon
+#     sample.triggers     = ['HLT_IsoMu24_v%d'                                   %i for i in range(1, 12)]
+#     sample.triggers    += ['HLT_IsoTkMu24_v%d'                                 %i for i in range(1, 12)]
+# 
+#     # triggers you don't, suppose you run on two different datasets
+#     sample.vetoTriggers = ['HLT_DoubleMu3_Trk_Tau3mu_v%d'                      %i for i in range(1, 12)]
+
+
+#     sample.triggers += ['HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v%d'           %i for i in range(1, 12)]
+#     sample.triggers += ['HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v%d'         %i for i in range(1, 12)]
+#     sample.triggers += ['HLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v%d'       %i for i in range(1, 12)]
+#     sample.triggers += ['HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v%d' %i for i in range(1, 12)]
+#     sample.triggers += ['HLT_TripleMu_12_10_5_v%d'                          %i for i in range(1, 12)]
+
+
+    sample.splitFactor = splitFactor(sample, 5e4)
+    sample.json = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Final/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt'
 
 selectedComponents = samples
 
@@ -81,52 +89,7 @@ eventSelector = cfg.Analyzer(
     EventSelector,
     name='EventSelector',
     toSelect=[
-        12114,
-        12589,
-        12664,
-        12689,
-        13680,
-        14385,
-        14632,
-        15248,
-        15588,
-         1621,
-        16276,
-        17307,
-        17453,
-        17488,
-        17507,
-        17838,
-        18126,
-        18817,
-        19001,
-        19194,
-        19262,
-        19398,
-        19610,
-        19704,
-         2380,
-         2417,
-         2882,
-         3201,
-         3898,
-         4194,
-         4338,
-         5384,
-         5454,
-         5493,
-         5604,
-         5996,
-          645,
-         6451,
-         6829,
-         7197,
-         7530,
-         7571,
-         8705,
-          999,
-         9527,
-         9989,
+        63789731,
     ]
 )
 
@@ -167,14 +130,11 @@ pileUpAna = cfg.Analyzer(
     true=True
 )
 
-genAna = GeneratorAnalyzer.defaultConfig
-genAna.allGenTaus = True # save in event.gentaus *ALL* taus, regardless whether hadronic / leptonic decay
-
 # for each path specify which filters you want the muons to match to
 triggers_and_filters = OrderedDict()
-triggers_and_filters['HLT_DoubleMu3_Trk_Tau3mu'                     ] = (['hltTau3muTkVertexFilter'                              , 'hltTau3muTkVertexFilter'                             , 'hltTau3muTkVertexFilter'                             ], Counter({83:2, 91:1}))
-# triggers_and_filters['HLT_IsoMu24'                                  ] = (['hltL3crIsoL1sMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p09'                                                                                                                ], Counter({83:1      }))
-# triggers_and_filters['HLT_IsoTkMu24'                                ] = (['hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09'                                                                                                                          ], Counter({83:1      }))
+# triggers_and_filters['HLT_DoubleMu3_Trk_Tau3mu'                     ] = (['hltTau3muTkVertexFilter'                              , 'hltTau3muTkVertexFilter'                             , 'hltTau3muTkVertexFilter'                             ], Counter({83:2, 91:1}))
+triggers_and_filters['HLT_IsoMu24'                                  ] = (['hltL3crIsoL1sMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p09'                                                                                                                ], Counter({83:1      }))
+triggers_and_filters['HLT_IsoTkMu24'                                ] = (['hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09'                                                                                                                          ], Counter({83:1      }))
 # triggers_and_filters['HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ'          ] = (['hltDiMuonGlb17Glb8RelTrkIsoFiltered0p4DzFiltered0p2'  , 'hltDiMuonGlb17Glb8RelTrkIsoFiltered0p4DzFiltered0p2'                                                         ], Counter({83:2      }))
 # triggers_and_filters['HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ'        ] = (['hltDiMuonGlb17Trk8RelTrkIsoFiltered0p4DzFiltered0p2'  , 'hltDiMuonGlb17Trk8RelTrkIsoFiltered0p4DzFiltered0p2'                                                         ], Counter({83:2      }))
 # triggers_and_filters['HLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ'      ] = (['hltDiMuonTrk17Trk8RelTrkIsoFiltered0p4DzFiltered0p2'  , 'hltDiMuonTrk17Trk8RelTrkIsoFiltered0p4DzFiltered0p2'                                                         ], Counter({83:2      }))
@@ -196,6 +156,20 @@ treeProducer = cfg.Analyzer(
     fillL1=False,
 )
 
+metFilter = cfg.Analyzer(
+    METFilter,
+    name='METFilter',
+    processName='RECO',
+    triggers=[
+        'Flag_HBHENoiseFilter', 
+        'Flag_HBHENoiseIsoFilter', 
+        'Flag_EcalDeadCellTriggerPrimitiveFilter',
+        'Flag_goodVertices',
+        'Flag_eeBadScFilter',
+        'Flag_globalTightHalo2016Filter'
+    ]
+)
+
 if kin_vtx_fitter:
     vertexFitter = cfg.Analyzer(
         Tau3MuKinematicVertexFitterAnalyzer,
@@ -213,13 +187,8 @@ isoAna = cfg.Analyzer(
     name='Tau3MuIsolationAnalyzer',
 )
 
-genMatchAna = cfg.Analyzer(
-    GenMatcherAnalyzer,
-    name='GenMatcherAnalyzer',
-    getter = lambda event : event.tau3mu,
-)
-
 level1Ana = L1TriggerAnalyzer.defaultConfig
+level1Ana.process = 'RECO'
 
 bdtAna = cfg.Analyzer(
     BDTAnalyzer,
@@ -242,20 +211,6 @@ recoilAna = cfg.Analyzer(
     pfMetRCFile='CMGTools/WTau3Mu/data/recoilCorrections/TypeI-PFMet_Run2016BtoH.root',
 )
 
-## ABOUT muon weighter
-##  jsonFile = (jsonFilepath.json, binningVariable, UsePtOnly)
-muonWeighterAna = cfg.Analyzer(
-    MuonWeighterAnalyzer,
-    jsonFileID_TIH = ('%s/src/CMGTools/WTau3Mu/data/SFs/ScaleFactors_tight2016_muonID_withZ.json'         % os.path.expandvars('$CMSSW_BASE')  , 'pt_abseta' ),
-    jsonFileID_MNT = ('%s/src/CMGTools/WTau3Mu/data/SFs/ScaleFactors_mediumNOTtight2016_muonID_updt.json' % os.path.expandvars('$CMSSW_BASE')  , 'pt'        ),
-    jsonFileID_LNM = ('%s/src/CMGTools/WTau3Mu/data/SFs/ScaleFactors_looseNOTmedium_muonID_updt.json'     % os.path.expandvars('$CMSSW_BASE')  , 'pt'        ),
-    jsonFileID_SNL = ('%s/src/CMGTools/WTau3Mu/data/SFs/ScaleFactors_soft2016NOTloose_muonID_updt.json'   % os.path.expandvars('$CMSSW_BASE')  , 'pt'        ),
-    jsonFileHLT_MU = ('%s/src/CMGTools/WTau3Mu/data/SFs/ScaleFactors_RunBH_muonHLT_June2018.json'         % os.path.expandvars('$CMSSW_BASE')  , 'pt_eta'    ),
-    jsonFileHLT_TK = ('%s/src/CMGTools/WTau3Mu/data/SFs/HLT_track_SFs.json'                               % os.path.expandvars('$CMSSW_BASE')  , 'ds_pt'     ),
-    multiplyEventWeight = True,
-    #getter = lambda event : [event.tau3muRefit.mu1(), event.tau3muRefit.mu2(), event.tau3muRefit.mu3()],
-    getter = lambda event : [event.tau3mu.mu1(), event.tau3mu.mu2(), event.tau3mu.mu3()],
-)
 # see SM HTT TWiki
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/SMTauTau2016#Jet_Energy_Corrections
 jetAna = cfg.Analyzer(
@@ -288,19 +243,17 @@ sequence = cfg.Sequence([
     lheWeightAna,
     jsonAna,
     skimAna,
-    genAna,
     triggerAna, # First analyser that applies selections
     vertexAna,
     pileUpAna,
     tau3MuAna,
     jetAna,
-    genMatchAna,
-#     recoilAna,
     vertexFitter,
-    muonWeighterAna,
+    muIdAna,
     isoAna,
 #     level1Ana,
     bdtAna,
+    metFilter,
     treeProducer,
 ])
 
@@ -308,16 +261,14 @@ sequence = cfg.Sequence([
 ###            SET BATCH OR LOCAL               ###
 ###################################################
 if not production:
-    comp                 = WToTauTo3Mu
+    comp                 = samples[-1]
     selectedComponents   = [comp]
     comp.splitFactor     = 1
-    comp.fineSplitFactor = 1
-#     comp.files           = comp.files[:1]
-#     comp.files = [
-#        '/afs/cern.ch/work/m/manzoni/public/perLuca/newsignal/output.root'
-       #'file:/afs/cern.ch/work/m/manzoni/diTau2015/CMSSW_9_2_2_minimal_recipe/src/RecoMET/METPUSubtraction/test/output.root',
-#       'root://xrootd.unl.edu//store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v1/000/272/760/00000/68B88794-7015-E611-8A92-02163E01366C.root',
-#     ]
+#     comp.fineSplitFactor = 4
+#     for comp in selectedComponents:
+#         comp.fineSplitFactor = 4
+    comp.files           = comp.files[:1]
+    comp.files = ['/eos/user/m/manzoni/WTau3Mu/singlemuon2016Hv3_mvamet.root']
 
 preprocessor = None
 
@@ -327,7 +278,7 @@ if extrap_muons_to_L1:
     preprocessor = CmsswPreprocessor(fname, addOrigAsSecondary=False)
 
 if compute_mvamet:
-    fname = '$CMSSW_BASE/src/CMGTools/WTau3Mu/prod/compute_mva_met_mc_cfg.py'
+    fname = '$CMSSW_BASE/src/CMGTools/WTau3Mu/prod/compute_mva_met_data_cfg.py'
     sequence.append(fileCleaner)
     preprocessor = CmsswPreprocessor(fname, addOrigAsSecondary=False)
 

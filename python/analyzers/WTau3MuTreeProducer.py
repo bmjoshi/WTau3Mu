@@ -36,11 +36,20 @@ class WTau3MuTreeProducer(WTau3MuTreeProducerBase):
 
         # generator information
         self.bookGenParticle(self.tree, 'gen_w')
+        self.var            (self.tree, 'gen_w_pz')
         self.bookGenParticle(self.tree, 'mu1_refit_gen')
         self.bookGenParticle(self.tree, 'mu2_refit_gen')
         self.bookGenParticle(self.tree, 'mu3_refit_gen')
         self.bookGenParticle(self.tree, 'cand_refit_gen')
         self.bookParticle(self.tree, 'gen_met')
+        self.var         (self.tree, 'gen_met_pz')
+        self.bookParticle(self.tree, 'gen_nu')
+        self.var         (self.tree, 'gen_nu_pz')
+
+        # hadronic tau check
+        if getattr(self.cfg_ana, 'tauh', False):
+            self.bookParticle(self.tree, 'gen_tauh')
+            self.var         (self.tree, 'gen_tauh_dm')
 
         # trigger information
         if hasattr(self.cfg_ana, 'fillL1') and self.cfg_ana.fillL1:
@@ -121,6 +130,7 @@ class WTau3MuTreeProducer(WTau3MuTreeProducerBase):
         # generator information
         if hasattr(event, 'genw') and event.genw is not None: 
             self.fillGenParticle(self.tree, 'gen_w', event.genw)
+            self.fill           (self.tree, 'gen_w_pz', event.genw.pz())
 
         if hasattr(event.tau3muRefit.mu1(), 'genp') and event.tau3muRefit.mu1().genp is not None: 
             self.fillGenParticle(self.tree, 'mu1_refit_gen', event.tau3muRefit.mu1().genp)
@@ -130,7 +140,12 @@ class WTau3MuTreeProducer(WTau3MuTreeProducerBase):
             self.fillGenParticle(self.tree, 'mu3_refit_gen', event.tau3muRefit.mu3().genp)
 
         if hasattr(event, 'genmet') and event.genmet is not None: 
-            self.fillParticle(self.tree, 'gen_met', event.genmet)
+            self.fillParticle(self.tree, 'gen_met'   , event.genmet     )
+            self.fill        (self.tree, 'gen_met_pz', event.genmet.pz())
+
+        if hasattr(event, 'gennufromw') and event.genmet is not None: 
+            self.fillParticle(self.tree, 'gen_nu'   , event.gennufromw     )
+            self.fill        (self.tree, 'gen_nu_pz', event.gennufromw.pz())
 
         if hasattr(event, 'gentau') and event.gentau is not None: 
             self.fillParticle(self.tree, 'cand_refit_gen', event.gentau)
@@ -272,6 +287,38 @@ class WTau3MuTreeProducer(WTau3MuTreeProducerBase):
 
         self.fill(self.tree, 'trk_hlt_sf'  , getattr(event.tau3mu      , 'HLTWeightTK'   , 1.))
         self.fill(self.tree, 'trk_hlt_sf_e', getattr(event.tau3mu      , 'HLTWeightUncTK', 0.))
+
+#         import pdb ; pdb.set_trace() 
+
+        # hadronic tau check
+        if getattr(self.cfg_ana, 'tauh', False):
+            for itau in event.gentaus:
+                if deltaR(itau, event.tau3muRefit.p4Muons())<0.1:
+                    self.fillParticle(self.tree, 'gen_tauh', itau)
+                    itau = event.gentaus[0]
+                    dm = -99
+                    ncharged = 0
+                    nneutral = 0
+                    nele     = 0
+                    nmu      = 0
+                    ntau     = 0
+                    for idau in range(itau.numberOfDaughters()):
+                        print itau.daughter(idau).pdgId()
+                        if abs(itau.daughter(idau).pdgId()) in [11]      : nele     +=1
+                        if abs(itau.daughter(idau).pdgId()) in [13]      : nmu      +=1
+                        if abs(itau.daughter(idau).pdgId()) in [15]      : ntau     +=1
+                        if abs(itau.daughter(idau).pdgId()) in [321, 211]: ncharged +=1
+                        if abs(itau.daughter(idau).pdgId()) in [111]     : nneutral +=1
+                    if ncharged>0:
+                        dm = (ncharged-1)*5 + nneutral
+                    if nmu>0:
+                        dm = -13
+                    if nele>0:
+                        dm = -11
+                    if ntau>0:
+                        dm = -15
+                    self.fill(self.tree, 'gen_tauh_dm', dm)
+                    break
 
         self.fillTree(event)
 

@@ -71,9 +71,15 @@ process.source.fileNames = cms.untracked.vstring(
 #  'root://cms-xrd-global.cern.ch//store/data/Run2016H/DoubleMuonLowMass/MINIAOD/03Feb2017_ver3-v1/110000/40663461-86EB-E611-954A-0CC47A74525A.root',
 #  'root://cms-xrd-global.cern.ch//store/data/Run2016H/DoubleMuonLowMass/MINIAOD/03Feb2017_ver3-v1/110000/683A5D5F-86EB-E611-B96F-0025905A60A8.root',
 #  'root://cms-xrd-global.cern.ch//store/data/Run2016H/DoubleMuonLowMass/MINIAOD/03Feb2017_ver3-v1/110000/CA9E265B-C8EB-E611-B9FB-0CC47A4D7634.root',
-    'root://cms-xrd-global.cern.ch//store/data/Run2016E/DoubleMuonLowMass/MINIAOD/23Sep2016-v1/50000/C881EEF5-8590-E611-91F6-0CC47AD98A92.root',
-    'root://cms-xrd-global.cern.ch//store/data/Run2016E/DoubleMuonLowMass/MINIAOD/23Sep2016-v1/50000/C8AC428A-8190-E611-B72D-003048F5B614.root',
-    'root://cms-xrd-global.cern.ch//store/data/Run2016E/DoubleMuonLowMass/MINIAOD/23Sep2016-v1/50000/CE53955B-A393-E611-B340-0242AC130002.root',
+#     'root://cms-xrd-global.cern.ch//store/data/Run2016E/DoubleMuonLowMass/MINIAOD/23Sep2016-v1/50000/C881EEF5-8590-E611-91F6-0CC47AD98A92.root',
+#     'root://cms-xrd-global.cern.ch//store/data/Run2016E/DoubleMuonLowMass/MINIAOD/23Sep2016-v1/50000/C8AC428A-8190-E611-B72D-003048F5B614.root',
+#     'root://cms-xrd-global.cern.ch//store/data/Run2016E/DoubleMuonLowMass/MINIAOD/23Sep2016-v1/50000/CE53955B-A393-E611-B340-0242AC130002.root',
+
+    'root://cms-xrd-global.cern.ch//store/data/Run2016H/SingleMuon/MINIAOD/03Feb2017_ver3-v1/80000/B4FAEA51-7DEA-E611-9BB6-A0000420FE80.root',
+    'root://cms-xrd-global.cern.ch//store/data/Run2016H/SingleMuon/MINIAOD/03Feb2017_ver3-v1/80000/4C3A6DE3-7DEA-E611-8664-A0000420FE80.root',
+    'root://cms-xrd-global.cern.ch//store/data/Run2016H/SingleMuon/MINIAOD/03Feb2017_ver3-v1/80000/520C6456-7DEA-E611-B733-A0000420FE80.root',
+    'root://cms-xrd-global.cern.ch//store/data/Run2016H/SingleMuon/MINIAOD/03Feb2017_ver3-v1/80000/9C332DDA-7DEA-E611-8821-A0000420FE80.root',
+    'root://cms-xrd-global.cern.ch//store/data/Run2016H/SingleMuon/MINIAOD/03Feb2017_ver3-v1/80000/DC5FA286-7CEA-E611-982C-B8CA3A70A5E8.root',
 )
 
 ## logger
@@ -143,7 +149,8 @@ process.maxEvents = cms.untracked.PSet(
 
 
 process.output = cms.OutputModule('PoolOutputModule',
-                                  fileName = cms.untracked.string('output_mvamet.root'),
+#                                   fileName = cms.untracked.string('output_mvamet.root'),
+                                  fileName = cms.untracked.string('/eos/user/m/manzoni/WTau3Mu/output_mvamet.root'),
                                   outputCommands = cms.untracked.vstring(
 #                                                                          'keep patMETs_slimmedMETs_*_MVAMET',
 #                                                                          'keep patMETs_slimmedMETsPuppi_*_MVAMET',

@@ -162,6 +162,9 @@ mass_histo_mc  .SetLineColor(ROOT.kRed  )
 mass_histo_mc  .SetFillColor(ROOT.kRed  )
 mass_histo_mc  .SetFillStyle(3004)
 
+mass_histo_data.SetBinErrorOption(ROOT.TH1.kPoisson)
+mass_histo_mc  .SetBinErrorOption(ROOT.TH1.kPoisson)
+
 mass_histo_data.Draw('EP')
 mass_histo_mc  .Draw('HISTSAME')
 expo_tot.SetLineColor(ROOT.kBlack)
