@@ -81,6 +81,11 @@ class WTau3MuTreeProducer(WTau3MuTreeProducerBase):
         # BDT output
         self.var(self.tree, 'bdt_proba')
         self.var(self.tree, 'bdt_decision')
+
+        # save HLT match type
+        self.var(self.tree, 'mu1_hlt_doublemu3_trk_tau3mu_type')
+        self.var(self.tree, 'mu2_hlt_doublemu3_trk_tau3mu_type')
+        self.var(self.tree, 'mu3_hlt_doublemu3_trk_tau3mu_type')
         
         # more on weights
         self.var(self.tree, 'mu1_id_sf'   )
@@ -267,6 +272,14 @@ class WTau3MuTreeProducer(WTau3MuTreeProducerBase):
         self.fill(self.tree, 'HTbjets', event.HT_bJets       )
         self.fill(self.tree, 'njets'  , len(event.cleanJets) )
         self.fill(self.tree, 'nbjets' , len(event.cleanBJets))
+
+        # save HLT match type
+        try:
+            self.fill(self.tree, 'mu1_hlt_doublemu3_trk_tau3mu_type', event.tau3mu.best_trig_match[1]['HLT_DoubleMu3_Trk_Tau3mu'].triggerObjectTypes()[0])
+            self.fill(self.tree, 'mu2_hlt_doublemu3_trk_tau3mu_type', event.tau3mu.best_trig_match[2]['HLT_DoubleMu3_Trk_Tau3mu'].triggerObjectTypes()[0])
+            self.fill(self.tree, 'mu3_hlt_doublemu3_trk_tau3mu_type', event.tau3mu.best_trig_match[3]['HLT_DoubleMu3_Trk_Tau3mu'].triggerObjectTypes()[0])
+        except:
+            pass
 
         # weights
         self.fill(self.tree, 'mu1_id_sf'   , getattr(event.tau3mu.mu1(), 'idweight'      , 1.))
