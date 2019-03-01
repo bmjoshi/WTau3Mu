@@ -34,6 +34,7 @@ from CMGTools.WTau3Mu.analyzers.L1TriggerAnalyzer                   import L1Tri
 from CMGTools.WTau3Mu.analyzers.BDTAnalyzer                         import BDTAnalyzer
 from CMGTools.WTau3Mu.analyzers.MVAMuonIDAnalyzer                   import MVAMuonIDAnalyzer
 from CMGTools.WTau3Mu.analyzers.RecoilCorrector                     import RecoilCorrector
+from CMGTools.WTau3Mu.analyzers.TriggerAnalyzer                     import TriggerAnalyzer
 
 # import samples
 from CMGTools.WTau3Mu.samples.data_2016                             import datasamplesDoubleMuLowMass03Feb2017 as samples
@@ -42,15 +43,23 @@ puFileMC   = '$CMSSW_BASE/src/CMGTools/H2TauTau/data/MC_Moriond17_PU25ns_V1.root
 puFileData = '/afs/cern.ch/user/a/anehrkor/public/Data_Pileup_2016_271036-284044_80bins.root'
 
 ###################################################
+###            SUBMISSION COMMAND               ###
+###################################################
+# heppy_batch.py -r /store/group/phys_tau/WTau3Mu/DoubleMuLowMass23Feb2019 -o DoubleMuLowMass23Feb2019 wtau3mu_2016_data_doublemu_lowmass_cfg.py -B -b 'run_condor_simple.sh -t 1200 ./batchScript.sh'
+
+###################################################
 ###                   OPTIONS                   ###
 ###################################################
 # Get all heppy options; set via "-o production" or "-o production=True"
 # production = True run on batch, production = False (or unset) run locally
 production         = getHeppyOption('production'        , True )
+compute_mvamet     = getHeppyOption('compute_mvamet'    , True )
+use_mvamet         = getHeppyOption('use_mvamet'        , True )
+prefetch           = getHeppyOption('prefetch'          , True ) 
+
 pick_events        = getHeppyOption('pick_events'       , False)
 kin_vtx_fitter     = getHeppyOption('kin_vtx_fitter'    , True )
 extrap_muons_to_L1 = getHeppyOption('extrap_muons_to_L1', False)
-compute_mvamet     = getHeppyOption('compute_mvamet'    , True )
 ###################################################
 ###               HANDLE SAMPLES                ###
 ###################################################
@@ -89,7 +98,6 @@ eventSelector = cfg.Analyzer(
     EventSelector,
     name='EventSelector',
     toSelect=[
-        119409188,
         118275827,
     ]
 )
@@ -112,6 +120,7 @@ skimAna = cfg.Analyzer(
 triggerAna = cfg.Analyzer(
     TriggerAnalyzer,
     name='TriggerAnalyzer',
+    unpackLabels=True,
     addTriggerObjects=True,
     requireTrigger=True,
     usePrescaled=False
@@ -145,9 +154,8 @@ triggers_and_filters['HLT_DoubleMu3_Trk_Tau3mu'                     ] = (['hltTa
 tau3MuAna = cfg.Analyzer(
     Tau3MuAnalyzer,
     name='Tau3MuAnalyzer',
-#     trigger_match=True,
     trigger_match=triggers_and_filters,
-    useMVAmet=True,
+    useMVAmet=use_mvamet,
     dz_cut=1, # 1 cm
 )
 
@@ -253,7 +261,7 @@ sequence = cfg.Sequence([
     muIdAna,
     isoAna,
 #     level1Ana,
-    bdtAna,
+#     bdtAna,
     metFilter,
     treeProducer,
 ])
@@ -262,7 +270,7 @@ sequence = cfg.Sequence([
 ###            SET BATCH OR LOCAL               ###
 ###################################################
 if not production:
-    comp                 = samples[-7]
+    comp                 = samples[-1]
     selectedComponents   = [comp]
 #     selectedComponents   = [samples[-7], samples[-5]]
     comp.splitFactor     = 1
@@ -271,7 +279,8 @@ if not production:
 #     for comp in selectedComponents:
 #         comp.fineSplitFactor = 4
 #     comp.files = ['file:/afs/cern.ch/work/m/manzoni/diTau2015/CMSSW_9_2_2_minimal_recipe/src/CMGTools/WTau3Mu/cfgPython/data.root']
-    comp.files           = comp.files[:1]
+#     comp.files           = comp.files[:3]
+#     comp.files           = ['/afs/cern.ch/work/m/manzoni/diTau2015/CMSSW_9_2_2_minimal_recipe/src/CMGTools/WTau3Mu/cfgPython/04793E09-E0EA-E611-B918-0CC47A706D70.root']
 #     comp.files = [
 #          'file:/eos/cms/store/group/phys_tau/WTau3Mu/mvamet2016/mvamet_from_cpp_data/DoubleMuonLowMass_Run2016G_23Sep2016/cmsswPreProcessing.root'
 #        'root://xrootd.unl.edu//store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v1/000/272/760/00000/68B88794-7015-E611-8A92-02163E01366C.root'
@@ -284,7 +293,20 @@ if not production:
 #         'root://cms-xrd-global.cern.ch//store/data/Run2016E/DoubleMuonLowMass/MINIAOD/23Sep2016-v1/50000/CE53955B-A393-E611-B340-0242AC130002.root',
 #     ]
 
+###################################################
+###            PREPROCESSOR and                ###
+###################################################
+
 preprocessor = None
+
+# temporary copy remote files using xrd
+from PhysicsTools.HeppyCore.framework.eventsfwlite import Events
+from CMGTools.WTau3Mu.tools.EOSEventsWithDownload import EOSEventsWithDownload
+event_class = EOSEventsWithDownload if not preprocessor else Events
+EOSEventsWithDownload.aggressive = 2 # always fetch if running on Wigner
+EOSEventsWithDownload.long_cache = getHeppyOption('long_cache', False)
+
+if preprocessor: preprocessor.prefetch = prefetch
 
 if extrap_muons_to_L1:
     fname = '$CMSSW_BASE/src/CMGTools/WTau3Mu/prod/muon_extrapolator_cfg.py'
@@ -299,13 +321,12 @@ if compute_mvamet:
 
 # the following is declared in case this cfg is used in input to the
 # heppy.py script
-from PhysicsTools.HeppyCore.framework.eventsfwlite import Events
 config = cfg.Config(
     components   = selectedComponents,
     sequence     = sequence,
     services     = [],
     preprocessor = preprocessor,
-    events_class = Events
+    events_class = event_class
 )
 
 printComps(config.components, True)

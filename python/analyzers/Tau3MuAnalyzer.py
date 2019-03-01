@@ -241,6 +241,10 @@ class Tau3MuAnalyzer(Analyzer):
                     relevant_filters = self.cfg_ana.trigger_match[mykey][0]
                     relevant_objects = [obj for obj in info.objects if sum([obj.filter(ifilter) for ifilter in set(relevant_filters)])>0]
 
+#                     if len(relevant_objects)>3:
+#                         import pdb ; pdb.set_trace()
+
+
                     # start with simple matching
                     these_objects1 = sorted([obj for obj in relevant_objects if deltaR(triplet.mu1(), obj)<0.05], key = lambda x : deltaR(x, triplet.mu1()))
                     these_objects2 = sorted([obj for obj in relevant_objects if deltaR(triplet.mu2(), obj)<0.05], key = lambda x : deltaR(x, triplet.mu2()))
@@ -306,7 +310,7 @@ class Tau3MuAnalyzer(Analyzer):
                             
                             # good_matches are still sorted by minimum dR, so the first is the best match
                             good_matches = good_matches_tmp
-
+                        
                         triplet.best_trig_match[1][mykey] = good_matches[0][0] if len(good_matches) and len(good_matches[0])>0 else None
                         triplet.best_trig_match[2][mykey] = good_matches[0][1] if len(good_matches) and len(good_matches[0])>1 else None
                         triplet.best_trig_match[3][mykey] = good_matches[0][2] if len(good_matches) and len(good_matches[0])>2 else None
