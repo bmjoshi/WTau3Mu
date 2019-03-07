@@ -18,7 +18,6 @@ from PhysicsTools.Heppy.analyzers.gen.GeneratorAnalyzer             import Gener
 from PhysicsTools.Heppy.analyzers.gen.LHEWeightAnalyzer             import LHEWeightAnalyzer
         
 # Tau-tau analysers        
-from CMGTools.H2TauTau.proto.analyzers.TriggerAnalyzer              import TriggerAnalyzer
 from CMGTools.H2TauTau.proto.analyzers.METFilter                    import METFilter
 from CMGTools.H2TauTau.proto.analyzers.FileCleaner                  import FileCleaner
 from CMGTools.H2TauTau.proto.analyzers.JetAnalyzer                  import JetAnalyzer
